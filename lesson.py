@@ -1,17 +1,32 @@
+import pandas as pd
 import requests
 from bs4 import BeautifulSoup
+from time import sleep
 
-url = "https://www.python.org/"
+url='https://www.python.org/'
 r = requests.get(url)
 
-# soup = BeautifulSoup(html, 'lxml')
 soup = BeautifulSoup(r.content, 'html.parser')
-tag=soup.find(attrs={'class': 'shrubbery'})
-ul = tag.find('ul', attrs= {'class': 'menu'})
+post = soup.find('div', class_='blog-widget')
 
-date = ul.find_all('time')
-titles =ul.find_all('a')
-for i, title in enumerate(titles):
-  print('='*30, i, '='*30)
-  print(f'日付 ： {date[i].text}')
-  print(f'タイトル : {title.text}')
+d_list = []
+for li in post.find_all('li'):
+  post_url = li.find('a').get('href')
+
+  sleep(2)
+  post_r = requests.get(post_url)
+  post_soup = BeautifulSoup(post_r.content, 'html.parser')
+  post_h3 = [h3.text for h3 in post_soup.find_all('h3')]
+  d = {
+    'title': li.find('a').text,
+    'date': li.find('time').text,
+    'url': post_url,
+    'post_h3': post_h3,
+  }
+  d_list.append(d)
+
+df=pd.DataFrame(d_list)
+
+print(df)
+
+df.to_csv('python_web_posts.csv', index=None, encoding='utf-8-sig')
