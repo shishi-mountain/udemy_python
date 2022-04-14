@@ -50,7 +50,12 @@ for d_url in d_list:
     if (soup.find('a', class_='_canonicalUrl') == None):
       # それでも見つからない場合は、会社URLは空白にする
       company_url = ''
-      break
+      c_info = {
+        'company': company.get_text().replace('\r\n','').replace('\n','').replace(' ', ''),
+        'url': company_url,
+      }
+      company_list.append(c_info)
+      continue
     else:
       detail_url = soup.find('a', class_='_canonicalUrl').get('href')
       detail_r = requests.get(detail_url)
@@ -59,13 +64,11 @@ for d_url in d_list:
   c_profile = soup.find('table', id='company_profile_table')
   if c_profile == None:
     company_url = ''
-    break
   else:
     if c_profile.find('a') == None:
       company_url = ''
-      break
-
-    company_url = c_profile.find('a').get('href')
+    else:
+      company_url = c_profile.find('a').get('href')
 
   c_info = {
     'company': company.get_text().replace('\r\n','').replace('\n','').replace(' ', ''),
