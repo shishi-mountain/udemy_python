@@ -17,7 +17,7 @@ while True:
   res = requests.get(url, timeout=3, allow_redirects=False)
   print(res.status_code)
   #print(res.history)
-  #res.raise_for_status()
+  res.raise_for_status()
   if res.status_code != 200:
     break
 
