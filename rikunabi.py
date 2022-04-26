@@ -4,27 +4,75 @@ from bs4 import BeautifulSoup
 from time import sleep
 
 # 企業詳細ページURLリストを取得
+base_url = 'https://next.rikunabi.com'
 d_list = []
-# i = 0
-# while True:
-#   i += 1
+i = 0
+while True:
   # test
-  #if i>2:
-  #  break
+  if i>1:
+   break
 
-url='https://next.rikunabi.com/rnc/docs/cp_s00700.jsp?jb_type_long_cd=0500000000&wrk_plc_long_cd=0840000000&wrk_plc_long_cd=0840300000&curnum=1'
+  url='https://next.rikunabi.com/rnc/docs/cp_s00700.jsp?jb_type_long_cd=0500000000&wrk_plc_long_cd=0840000000&wrk_plc_long_cd=0840300000&curnum=' + str(1+50*i)
+  print(url)
+  i += 1
 
-res = requests.get(url, timeout=3)
-#res = requests.get(url, timeout=3, allow_redirects=False)
-print(res.status_code)
-#print(res.history)
-res.raise_for_status()
-# if res.status_code != 200:
-#   break
+  res = requests.get(url, timeout=3)
+  #res = requests.get(url, timeout=3, allow_redirects=False)
+  print(res.status_code)
+  #print(res.history)
+  res.raise_for_status()
+  if res.status_code != 200:
+    break
 
-soup = BeautifulSoup(res.content, 'html.parser')
-post = soup.select('.rnn-linkText--black')
-# post = soup.select('li')
-print(post)
-for pp in post:
-  print(pp.get('href'))
+  soup = BeautifulSoup(res.content, 'html.parser')
+  post = soup.select('.rnn-linkText--black')
+  # post = soup.select('li')
+  #print(post)
+  for pp in post:
+    detail_url = base_url + pp.get('href')
+    sleep(0.1)
+    d_list.append(detail_url)
+    # print(detail_url)
+
+# 詳細ページを読んで、求人詳細ページにとぶ
+company_list = []
+for d_url in d_list:
+  r = requests.get(d_url)
+  soup = BeautifulSoup(r.content, 'html.parser')
+
+  # 求人情報URL取得
+  if (soup.select_one('.rn3-companyOfferTabMenu__navItemLink') == None):
+    # 求人詳細ページがない場合は読み飛ばす
+    continue
+
+  info_url = base_url + soup.select_one('.rn3-companyOfferTabMenu__navItemLink').get('href')
+  info_r = requests.get(info_url)
+  soup = BeautifulSoup(info_r.content, 'html.parser')
+  if (soup.select_one('.rn3-companyOfferCompany__link') == None):
+    # 社名なし
+    continue
+
+  # 会社名
+  company_name = soup.select_one('.rn3-companyOfferCompany__link').text
+
+  if (soup.select_one('.js-companyOfferEntry__link') == None):
+    # 会社URLなし
+    continue
+
+  # 会社URL
+  company_url = soup.select_one('.js-companyOfferEntry__link').get('href')
+
+  c_info = {
+    'company': company_name.replace('\r\n','').replace('\n','').replace(' ', ''),
+    'url': base_url + company_url,
+  }
+  company_list.append(c_info)
+  #print(c_info)
+
+
+# CSV出力
+df=pd.DataFrame(company_list)
+
+print(df)
+
+df.to_csv('rikunabi.csv', index=None, encoding='utf-8-sig')
