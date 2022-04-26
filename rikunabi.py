@@ -10,7 +10,7 @@ d_list = []
 i = 0
 while True:
   # test
-  if i>1:
+  if i>3:
    break
 
   url='https://next.rikunabi.com/rnc/docs/cp_s00700.jsp?jb_type_long_cd=0500000000&wrk_plc_long_cd=0840000000&wrk_plc_long_cd=0840300000&curnum=' + str(1+50*i)
@@ -27,14 +27,14 @@ while True:
   post = soup.select('.rnn-linkText--black')
   for pp in post:
     detail_url = base_url + pp.get('href')
-    sleep(0.1)
+    sleep(1)
     d_list.append(detail_url)
     # print(detail_url)
 
 # 詳細ページを読んで、求人詳細ページにとぶ
 company_list = []
 for d_url in d_list:
-  r = requests.get(d_url)
+  r = requests.get(d_url, timeout=3)
   soup = BeautifulSoup(r.content, 'html.parser')
 
   # 求人情報URL取得
@@ -43,7 +43,7 @@ for d_url in d_list:
     continue
 
   info_url = base_url + soup.select_one('.rn3-companyOfferTabMenu__navItemLink').get('href')
-  info_r = requests.get(info_url)
+  info_r = requests.get(info_url, timeout=3)
   soup = BeautifulSoup(info_r.content, 'html.parser')
   if (soup.select_one('.rn3-companyOfferCompany__link') == None):
     # 社名なし
@@ -61,7 +61,8 @@ for d_url in d_list:
 
   tmp_r = requests.get(base_url + tmp_url)
   soup = BeautifulSoup(tmp_r.content, 'html.parser')
-  company_url = soup.find('a', text=re.compile("こちら"))
+  # company_url = soup.find('a', text=re.compile("こちら"))
+  company_url = soup.select_one('a:-soup-contains("こちら")')
   if company_url is None:
     # URLなし
     company_url = ''
