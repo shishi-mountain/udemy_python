@@ -2,6 +2,7 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 from time import sleep
+import re
 
 # 企業詳細ページURLリストを取得
 base_url = 'https://next.rikunabi.com'
@@ -17,17 +18,13 @@ while True:
   i += 1
 
   res = requests.get(url, timeout=3)
-  #res = requests.get(url, timeout=3, allow_redirects=False)
   print(res.status_code)
-  #print(res.history)
   res.raise_for_status()
   if res.status_code != 200:
     break
 
   soup = BeautifulSoup(res.content, 'html.parser')
   post = soup.select('.rnn-linkText--black')
-  # post = soup.select('li')
-  #print(post)
   for pp in post:
     detail_url = base_url + pp.get('href')
     sleep(0.1)
@@ -59,15 +56,25 @@ for d_url in d_list:
     # 会社URLなし
     continue
 
-  # 会社URL
-  company_url = soup.select_one('.js-companyOfferEntry__link').get('href')
+  # 会社URLに飛ぶ前のアクセスURL
+  tmp_url = soup.select_one('.js-companyOfferEntry__link').get('href')
+
+  tmp_r = requests.get(base_url + tmp_url)
+  soup = BeautifulSoup(tmp_r.content, 'html.parser')
+  company_url = soup.find('a', text=re.compile("こちら"))
+  if company_url is None:
+    # URLなし
+    company_url = ''
+  else:
+    company_url = company_url.get('href')
 
   c_info = {
     'company': company_name.replace('\r\n','').replace('\n','').replace(' ', ''),
-    'url': base_url + company_url,
+    'url': company_url,
   }
   company_list.append(c_info)
   #print(c_info)
+
 
 
 # CSV出力
