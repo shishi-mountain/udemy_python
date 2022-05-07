@@ -22,11 +22,11 @@ driver.implicitly_wait(10)
 driver.get('https://news.yahoo.co.jp')
 sleep(3)
 
+# ひとつだけ取得
 # e = driver.find_element_by_tag_name('h2')
 e = driver.find_element(by=By.TAG_NAME, value='h2')
 print(e.text)
 print(e.get_attribute('outerHTML'))  # BeautifulSoupのfind()とおなじ
-
 
 print('#### ')
 
@@ -39,6 +39,17 @@ for h2_tag in h2_tags:
 
 print(driver.title)
 print(driver.current_url)
+
+# idで取得
+e = driver.find_element(by=By.ID, value="uamods-topics")
+print(e.text)
+
+print('----')
+# classで取得
+e = driver.find_element(by=By.CLASS_NAME, value="sc-jqCOkK")
+print(e.text)
+print(e.get_attribute('href'))
+
 
 # driver.get('https://google.com')
 
