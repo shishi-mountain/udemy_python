@@ -3,17 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <title>Document</title>
+    <style>
+      li:not(#target) {
+        color: green;
+      }
+    </style>
   </head>
   <body>
-    <h1>title</h1>
-    <h2>study</h2>
+    <h1>タイトル</h1>
+    <h2>演習内容</h2>
+    <p>パラグラフ</p>
     <ol id="step1" class="study-list">
-      <li>python basic</li>
-      <li>HTML basic</li>
-    </ol>
-    <ol id="step2" class="study-list">
+      <li>Python basic</li>
+      <li value="10">HTML basic</li>
       <li>JS basic</li>
-      <li>Python library basic</li>
+      <li>python library basic</li>
     </ol>
   </body>
 </html>
